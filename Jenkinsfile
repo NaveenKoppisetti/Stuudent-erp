@@ -1,52 +1,28 @@
 pipeline {
     agent any
 
-    environment {
-        NODE_HOME = tool name: 'NodeJS', type: 'NodeJSInstallation'
-        PATH = "${NODE_HOME}/bin:${env.PATH}"
-    }
-
     stages {
-        stage('Checkout Code') {
-            steps {
-                git branch: 'main', url: 'https://github.com/NaveenKoppisetti/Stuudent-erp.git'
-            }
-        }
 
-        stage('Install Frontend Dependencies') {
+        stage('Install Dependencies') {
             steps {
-                dir('student_erp_frontend') {
+                dir('student-erp-frontend') {
                     sh 'npm install'
                 }
             }
         }
 
-        stage('Build Frontend') {
+        stage('Build') {
             steps {
-                dir('student_erp_frontend') {
+                dir('student-erp-frontend') {
                     sh 'npm run build'
                 }
             }
         }
 
-        stage('Copy Frontend to Spring Boot') {
+        stage('Run Tests') {
             steps {
-                sh 'cp -r student_erp_frontend/dist/* student_erp_backend/student/src/main/resources/static/'
-            }
-        }
-
-        stage('Build Spring Boot Backend') {
-            steps {
-                dir('student_erp_backend/student') {
-                    sh './mvnw clean package'
-                }
-            }
-        }
-
-        stage('Run Spring Boot') {
-            steps {
-                dir('student_erp_backend/student') {
-                    sh 'java -jar target/*.jar &'
+                dir('student-erp-frontend') {
+                    sh 'npm test'
                 }
             }
         }
@@ -54,10 +30,11 @@ pipeline {
 
     post {
         success {
-            echo '✅ Build & Deployment Completed Successfully!'
+            echo "✅ Build Successful!"
         }
         failure {
-            echo '❌ Build Failed!'
+            echo "❌ Build Failed!"
         }
     }
 }
+
